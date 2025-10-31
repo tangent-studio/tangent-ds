@@ -4,7 +4,7 @@
  * Using Tangent Notebook format
  */
 
-import { ml, stats } from '@tangent/ds';
+import { ml, stats } from '@tangent.to/ds';
 
 console.log('=== Hyperparameter Tuning Demo ===\n');
 

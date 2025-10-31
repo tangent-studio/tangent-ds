@@ -1,8 +1,8 @@
-# Introduction to @tangent/ds
+# Introduction to @tangent.to/ds
 
 ## Purpose and Philosophy
 
-`@tangent/ds` is a minimalist, browser-friendly data-science library built in pure JavaScript (ESM). It provides essential statistical, machine learning, and visualization tools without heavy dependencies or build complexity.
+`@tangent.to/ds` is a minimalist, browser-friendly data-science library built in pure JavaScript (ESM). It provides essential statistical, machine learning, and visualization tools without heavy dependencies or build complexity.
 
 ### Design Principles
 
@@ -50,15 +50,15 @@ Functions return configuration objects, not side-effects. You control when and h
 ## Installation
 
 ```bash
-npm install @tangent/ds
+npm install @tangent.to/ds
 # or
-yarn add @tangent/ds
+yarn add @tangent.to/ds
 ```
 
 ## Quick Start
 
 ```javascript
-import { stats, ml, plot } from '@tangent/ds';
+import { stats, ml, plot } from '@tangent.to/ds';
 
 // Linear regression
 const X = [[1], [2], [3], [4], [5]];
@@ -93,15 +93,15 @@ Build interactive data applications that run entirely client-side.
 ## Comparison with Other Libraries
 
 ### vs TensorFlow.js
-- **@tangent/ds**: Lightweight, interpretable, statistical focus
+- **@tangent.to/ds**: Lightweight, interpretable, statistical focus
 - **TensorFlow.js**: Heavy, GPU-accelerated, deep learning focus
 
 ### vs scikit-learn (Python)
-- **@tangent/ds**: JavaScript, browser-compatible, minimal
+- **@tangent.to/ds**: JavaScript, browser-compatible, minimal
 - **scikit-learn**: Python-only, comprehensive, battle-tested
 
 ### vs D3.js
-- **@tangent/ds**: Analysis and modeling, declarative plots
+- **@tangent.to/ds**: Analysis and modeling, declarative plots
 - **D3.js**: Visualization-first, imperative rendering
 
 ## Browser Compatibility

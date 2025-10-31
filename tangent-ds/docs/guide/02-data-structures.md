@@ -2,7 +2,7 @@
 
 ## Overview
 
-`@tangent/ds` provides flexible data structures for statistical and machine learning workflows. The library uses standard JavaScript arrays and objects, with optional wrappers for enhanced functionality.
+`@tangent.to/ds` provides flexible data structures for statistical and machine learning workflows. The library uses standard JavaScript arrays and objects, with optional wrappers for enhanced functionality.
 
 ## Core Data Types
 
@@ -37,7 +37,7 @@ const y = [0, 0, 1];
 The `core.linalg` module wraps `ml-matrix` for linear algebra:
 
 ```javascript
-import { core } from '@tangent/ds';
+import { core } from '@tangent.to/ds';
 
 // Convert to Matrix object
 const M = core.linalg.toMatrix([[1, 2], [3, 4]]);
@@ -57,7 +57,7 @@ const x = core.linalg.solveLeastSquares(A, b);
 The `core.table` module provides DataFrame-like functionality:
 
 ```javascript
-import { core } from '@tangent/ds';
+import { core } from '@tangent.to/ds';
 
 // Create table from arrays
 const data = {
@@ -117,7 +117,7 @@ const data = lines.slice(1).map(line =>
 ### Check Data Types
 
 ```javascript
-import { core } from '@tangent/ds';
+import { core } from '@tangent.to/ds';
 
 // Validate matrix dimensions
 function isValidMatrix(X) {
@@ -225,7 +225,7 @@ const value = matrix[i * nCols + j];
 ### Train-Test Split
 
 ```javascript
-import { ml } from '@tangent/ds';
+import { ml } from '@tangent.to/ds';
 
 const { XTrain, XTest, yTrain, yTest } = ml.validation.trainTestSplit(
   X, y, 
@@ -236,7 +236,7 @@ const { XTrain, XTest, yTrain, yTest } = ml.validation.trainTestSplit(
 ### Feature Scaling
 
 ```javascript
-import { ml } from '@tangent/ds';
+import { ml } from '@tangent.to/ds';
 
 const scaler = new ml.preprocessing.StandardScaler();
 scaler.fit(XTrain);
@@ -247,7 +247,7 @@ const XTestScaled = scaler.transform(XTest);
 ### One-Hot Encoding
 
 ```javascript
-import { ml } from '@tangent/ds';
+import { ml } from '@tangent.to/ds';
 
 const categories = ['red', 'green', 'blue', 'red'];
 const encoder = new ml.preprocessing.OneHotEncoder();

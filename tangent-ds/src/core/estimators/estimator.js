@@ -1,5 +1,5 @@
 /**
- * Base estimator classes for @tangent/ds
+ * Base estimator classes for @tangent.to/ds
  *
  * Provides a lightweight, scikit-learn inspired base:
  *  - Estimator: common utilities (params, serialization)

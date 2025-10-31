@@ -1,5 +1,5 @@
 /**
- * @tangent/ds - A minimalist, browser-friendly data-science library
+ * @tangent.to/ds - A minimalist, browser-friendly data-science library
  * 
  * Main entry point exporting core, stats, ml, mva, and plot namespaces
  */

@@ -4,7 +4,7 @@
  * Using Tangent Notebook format
  */
 
-import { ml, stats, core } from '@tangent/ds';
+import { ml, stats, core } from '@tangent.to/ds';
 
 console.log('=== Training Utilities Demo ===\n');
 

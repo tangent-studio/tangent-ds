@@ -5,14 +5,14 @@
 
 // %% [markdown]
 /*
-# Statistical analysis examples for @tangent/ds
+# Statistical analysis examples for @tangent.to/ds
 
 This notebook uses real datasets from Vega Datasets: https://cdn.jsdelivr.net/npm/vega-datasets@2/data/
 */
 
 // %% [javascript]
 import * as aq from "arquero";
-import * as ds from "@tangent/ds";
+import * as ds from "@tangent.to/ds";
 
 // %% [markdown]
 /*

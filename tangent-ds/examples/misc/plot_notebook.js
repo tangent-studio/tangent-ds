@@ -5,7 +5,7 @@
  * Uses real datasets from Vega Datasets: https://cdn.jsdelivr.net/npm/vega-datasets@2/data/
  */
 
-import { mva, plot } from "@tangent/ds";
+import { mva, plot } from "@tangent.to/ds";
 
 // ## Generate PCA Dataset - Penguins Dataset
 console.log("=== PCA Visualization - Penguins Dataset ===\n");

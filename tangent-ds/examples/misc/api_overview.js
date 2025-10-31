@@ -1,14 +1,14 @@
 // ---
-// title: Environmental Data Analysis - Complete @tangent/ds Overview
+// title: Environmental Data Analysis - Complete @tangent.to/ds Overview
 // id: tangent-ds-api-overview
-// description: Comprehensive demonstration of all @tangent/ds modules through ecological data analysis
+// description: Comprehensive demonstration of all @tangent.to/ds modules through ecological data analysis
 // ---
 
 // %% [markdown]
 /*
-# Environmental Data Analysis with @tangent/ds
+# Environmental Data Analysis with @tangent.to/ds
 
-This notebook demonstrates the complete API of `@tangent/ds` through a cohesive
+This notebook demonstrates the complete API of `@tangent.to/ds` through a cohesive
 analysis of environmental and ecological data. We'll explore:
 
 - Data preprocessing and validation
@@ -21,7 +21,7 @@ analysis of environmental and ecological data. We'll explore:
 */
 
 // %% [javascript]
-import { core, stats, ml, mva, plot } from '@tangent/ds';
+import { core, stats, ml, mva, plot } from '@tangent.to/ds';
 
 // %% [markdown]
 /*
@@ -449,7 +449,7 @@ console.log(`  Fold sizes: ${folds.map(f => f.trainIndices.length).join(', ')}`)
 /*
 ## Summary
 
-This notebook demonstrated the complete @tangent/ds API through ecological data analysis:
+This notebook demonstrated the complete @tangent.to/ds API through ecological data analysis:
 
 1. **Data Preparation**: Synthetic environmental dataset generation
 2. **Statistical Analysis**: Descriptive statistics and distributions
@@ -470,7 +470,7 @@ All plot configurations are ready for rendering with Observable Plot.
 
 // %% [javascript]
 console.log('\n=== Analysis Complete ===');
-console.log('All @tangent/ds modules demonstrated successfully.');
+console.log('All @tangent.to/ds modules demonstrated successfully.');
 console.log('\nPlot configs generated:');
 console.log('  - Correlation Heatmap');
 console.log('  - PCA Biplot');

@@ -4,7 +4,7 @@
  * Using Tangent Notebook format
  */
 
-import { core } from '@tangent/ds';
+import { core } from '@tangent.to/ds';
 
 console.log('=== Optimization Algorithms Demo ===\n');
 

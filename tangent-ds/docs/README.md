@@ -26,6 +26,14 @@ This command generates static content into the `build` directory and can be serv
 
 ## Deployment
 
+### Automated Deployment (Recommended)
+
+The documentation site is automatically deployed to GitHub Pages when a version tag is pushed to the repository. See [RELEASE.md](../../RELEASE.md) for details.
+
+### Manual Deployment
+
+For manual deployment, you can use these commands:
+
 Using SSH:
 
 ```bash

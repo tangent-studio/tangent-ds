@@ -4,7 +4,7 @@
  * Using Tangent Notebook format
  */
 
-import { ml, plot, stats } from '@tangent/ds';
+import { ml, plot, stats } from '@tangent.to/ds';
 
 // ## Generate Dataset with Known Structure
 function generateDiagnosticData(n = 150) {

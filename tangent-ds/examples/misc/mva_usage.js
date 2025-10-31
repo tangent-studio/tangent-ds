@@ -1,7 +1,7 @@
 // %% [markdown]
 
 /**
- * Multivariate Analysis (MVA) examples for @tangent/ds
+ * Multivariate Analysis (MVA) examples for @tangent.to/ds
  * Run with: node examples/mva_usage.js
  * Uses real datasets from Vega Datasets: https://cdn.jsdelivr.net/npm/vega-datasets@2/data/
  */
@@ -10,7 +10,7 @@
 import { core, mva } from "../src/index.js";
 
 console.log("=".repeat(70));
-console.log("@tangent/ds - Multivariate Analysis Examples (Penguins)");
+console.log("@tangent.to/ds - Multivariate Analysis Examples (Penguins)");
 console.log("=".repeat(70));
 
 // %% [javascript]

@@ -5,7 +5,7 @@
 
 // %% [markdown]
 /*
-Machine Learning module examples for @tangent/ds
+Machine Learning module examples for @tangent.to/ds
 Uses real datasets from Vega Datasets: https://cdn.jsdelivr.net/npm/vega-datasets@2/data/
 */
 
@@ -13,7 +13,7 @@ Uses real datasets from Vega Datasets: https://cdn.jsdelivr.net/npm/vega-dataset
 // # Example 1: K-means Clustering - Penguins Dataset
 
 // %% [javascript]
-import * as ds from "@tangent/ds";
+import * as ds from "@tangent.to/ds";
 
 const { ml } = ds;
 

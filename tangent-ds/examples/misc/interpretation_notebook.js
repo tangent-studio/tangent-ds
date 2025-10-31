@@ -11,7 +11,7 @@
 */
 
 // %% [javascript]
-import { ml, plot, stats } from '@tangent/ds';
+import { ml, plot, stats } from '@tangent.to/ds';
 
 // Generate synthetic regression dataset
 function generateRegressionData(n = 100) {
