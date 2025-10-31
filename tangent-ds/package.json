@@ -52,7 +52,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tangent/ds"
+    "url": "https://github.com/tangent-studio/tangent-ds"
   },
   "engines": {
     "node": ">=16.0.0"
