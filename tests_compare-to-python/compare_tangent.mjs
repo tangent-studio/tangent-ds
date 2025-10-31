@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Helper script to compute reference results using @tangent/ds for comparison
+ * Helper script to compute reference results using @tangent.to/ds for comparison
  * with scikit-learn. Supports PCA, linear regression, KMeans, LDA,
  * logistic regression, polynomial regression, MLP regression,
  * KNN, decision trees, random forests, and GAMs.

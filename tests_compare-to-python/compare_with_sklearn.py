@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Compare key numerical outputs between @tangent/ds estimators (via Node)
+Compare key numerical outputs between @tangent.to/ds estimators (via Node)
 and reference implementations built on scikit-learn.
 
 Requires numpy, scikit-learn (already installed in the UV environment)

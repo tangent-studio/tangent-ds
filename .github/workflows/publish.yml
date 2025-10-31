@@ -1,0 +1,79 @@
+name: Publish Package and Site
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  publish-npm:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: |
+          cd tangent-ds
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd tangent-ds
+          npm run test:run
+
+      - name: Build browser bundle
+        run: |
+          cd tangent-ds
+          npm run build:browser
+
+      - name: Verify package
+        run: |
+          cd tangent-ds
+          npm run verify
+
+      - name: Publish to npm
+        run: |
+          cd tangent-ds
+          npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  deploy-site:
+    runs-on: ubuntu-latest
+    needs: publish-npm
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd tangent-ds/docs
+          npm ci
+
+      - name: Build documentation site
+        run: |
+          cd tangent-ds/docs
+          npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./tangent-ds/docs/build
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
