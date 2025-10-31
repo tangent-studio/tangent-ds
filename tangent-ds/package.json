@@ -1,17 +1,17 @@
 {
   "name": "@tangent.to/ds",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A minimalist, browser-friendly data-science library in modern JavaScript (ESM)",
   "type": "module",
-  "main": "./src/index.js",
+  "main": "./dist/index.js",
   "module": "./dist/index.js",
+  "browser": "./dist/index.js",
   "exports": {
-    ".": "./src/index.js",
-    "./core": "./src/core/index.js",
-    "./stats": "./src/stats/index.js",
-    "./ml": "./src/ml/index.js",
-    "./mva": "./src/mva/index.js",
-    "./plot": "./src/plot/index.js"
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
   },
   "files": [
     "src",
