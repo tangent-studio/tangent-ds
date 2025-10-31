@@ -1,0 +1,152 @@
+import { describe, it, expect } from 'vitest';
+import { fit, transform } from '../src/mva/rda.js';
+import { RDA } from '../src/mva/index.js';
+import { approxEqual } from '../src/core/math.js';
+
+describe('RDA - Redundancy Analysis', () => {
+  describe('fit', () => {
+    it('should fit RDA model', () => {
+      // Simple case: Y depends on X
+      const Y = [
+        [1, 2],
+        [2, 4],
+        [3, 6],
+        [4, 8]
+      ];
+      const X = [
+        [1],
+        [2],
+        [3],
+        [4]
+      ];
+      
+      const model = fit(Y, X);
+      
+      expect(model.canonicalScores.length).toBe(4);
+      expect(model.canonicalLoadings.length).toBe(2);
+      expect(model.eigenvalues.length).toBeGreaterThan(0);
+      expect(model.constrainedVariance).toBeGreaterThan(0);
+      expect(model.constrainedVariance).toBeLessThanOrEqual(1);
+    });
+
+    it('should explain high variance for strong relationship', () => {
+      // Strong linear relationship
+      const Y = [[1, 1], [2, 2], [3, 3], [4, 4], [5, 5]];
+      const X = [[1], [2], [3], [4], [5]];
+      
+      const model = fit(Y, X);
+      
+      // Should explain most of the variance
+      expect(model.constrainedVariance).toBeGreaterThan(0.9);
+    });
+
+    it('should handle multiple response variables', () => {
+      const Y = [
+        [1, 2, 3],
+        [2, 4, 6],
+        [3, 6, 9]
+      ];
+      const X = [[1], [2], [3]];
+      
+      const model = fit(Y, X);
+      
+      expect(model.canonicalLoadings.length).toBe(3);
+      expect(model.q).toBe(3);
+    });
+
+    it('should handle multiple explanatory variables', () => {
+      const Y = [[1], [2], [3], [4]];
+      const X = [[1, 0], [2, 0], [3, 0.1], [4, 0]];
+      
+      const model = fit(Y, X);
+      
+      expect(model.p).toBe(2);
+      expect(model.coefficients.length).toBe(1); // 1 response variable
+      expect(model.coefficients[0].length).toBe(2); // 2 predictors
+    });
+
+    it('should throw error for mismatched dimensions', () => {
+      const Y = [[1], [2]];
+      const X = [[1]];
+      
+      expect(() => fit(Y, X)).toThrow();
+    });
+
+    it('should throw error for insufficient samples', () => {
+      const Y = [[1], [2]];
+      const X = [[1], [2]];
+      
+      expect(() => fit(Y, X)).toThrow();
+    });
+  });
+
+  describe('transform', () => {
+    it('should transform new data', () => {
+      const Y = [[1, 2], [2, 4], [3, 6]];
+      const X = [[1], [2], [3]];
+      
+      const model = fit(Y, X);
+      
+      const Ynew = [[4, 8]];
+      const Xnew = [[4]];
+      const transformed = transform(model, Ynew, Xnew);
+      
+      expect(transformed.length).toBe(1);
+      expect(transformed[0].rda1).toBeDefined();
+    });
+
+    it('should apply same centering as training', () => {
+      const Y = [[10, 20], [11, 21], [12, 22]];
+      const X = [[1], [2], [3]];
+      
+      const model = fit(Y, X);
+      
+      // Transform data at mean
+      const Ynew = [[11, 21]];
+      const Xnew = [[2]];
+      const transformed = transform(model, Ynew, Xnew);
+      
+      expect(transformed.length).toBe(1);
+      expect(typeof transformed[0].rda1).toBe('number');
+    });
+  });
+
+  describe('constrained variance', () => {
+    it('should be between 0 and 1', () => {
+      const Y = [[1, 2], [2, 3], [3, 5]];
+      const X = [[1], [2], [3]];
+      
+      const model = fit(Y, X);
+      
+      expect(model.constrainedVariance).toBeGreaterThanOrEqual(0);
+      expect(model.constrainedVariance).toBeLessThanOrEqual(1);
+    });
+
+    it('should be low when Y does not depend on X', () => {
+      const Y = [[1, 2], [3, 4], [5, 6], [7, 8]];
+      const X = [[1], [1], [1], [1]]; // Constant X
+      
+      const model = fit(Y, X);
+      
+      // Should explain little variance
+      expect(model.constrainedVariance).toBeLessThan(0.1);
+    });
+  });
+});
+
+describe('RDA - class API', () => {
+  it('should fit and transform with class wrapper', () => {
+    const Y = [[1, 2], [2, 4], [3, 6]];
+    const X = [[1], [2], [3]];
+
+    const estimator = new RDA();
+    estimator.fit(Y, X);
+
+    const summary = estimator.summary();
+    expect(summary.constrainedVariance).toBeGreaterThanOrEqual(0);
+
+    const transformed = estimator.transform(Y, X);
+    expect(transformed.length).toBe(3);
+    expect(transformed[0].rda1).toBeDefined();
+  });
+});

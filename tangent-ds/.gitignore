@@ -1,0 +1,11 @@
+node_modules/
+*.log
+coverage/
+.DS_Store
+dist/
+*.tgz
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

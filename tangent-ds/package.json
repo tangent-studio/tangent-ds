@@ -1,0 +1,73 @@
+{
+  "name": "@tangent/ds",
+  "version": "0.7.0",
+  "description": "A minimalist, browser-friendly data-science library in modern JavaScript (ESM)",
+  "type": "module",
+  "main": "./src/index.js",
+  "module": "./dist/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./core": "./src/core/index.js",
+    "./stats": "./src/stats/index.js",
+    "./ml": "./src/ml/index.js",
+    "./mva": "./src/mva/index.js",
+    "./plot": "./src/plot/index.js"
+  },
+  "files": [
+    "src",
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "build:browser": "esbuild src/index.js --bundle --platform=browser --format=esm --target=es2020 --outfile=dist/index.js --sourcemap --minify",
+    "watch": "esbuild src/index.js --bundle --platform=browser --format=esm --target=es2020 --outfile=dist/index.js --sourcemap --watch",
+    "dev": "npm run watch",
+    "example": "node examples/basic_usage.js",
+    "example:ml": "node examples/ml_usage.js",
+    "example:mva": "node examples/mva_usage.js",
+    "example:api": "node examples/api_overview.js",
+    "verify": "node verify-package.js",
+    "docs:dev": "cd docs && npm start",
+    "docs:build": "cd docs && npm run build",
+    "docs:serve": "cd docs && npm run serve"
+  },
+  "keywords": [
+    "data-science",
+    "statistics",
+    "linear-algebra",
+    "regression",
+    "machine-learning",
+    "visualization",
+    "observable-plot",
+    "esm",
+    "browser",
+    "typescript-compatible"
+  ],
+  "author": "Tangent",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tangent/ds"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "@observablehq/plot": "^0.6.17",
+    "arquero": "^8.0.3",
+    "d3-hierarchy": "^3.1.2",
+    "ml-matrix": "^6.11.1",
+    "simple-statistics": "^7.8.3"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^1.6.0",
+    "@vitest/ui": "^1.6.0",
+    "esbuild": "^0.25.11",
+    "vitest": "^1.6.0"
+  }
+}

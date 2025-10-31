@@ -1,0 +1,32 @@
+# Development files
+tests/
+examples/
+*.test.js
+vitest.config.js
+.gitignore
+
+# Documentation (keep README.md)
+CONTRIBUTING.md
+PHASE1_SUMMARY.md
+
+# Build artifacts
+coverage/
+.nyc_output/
+node_modules/
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
