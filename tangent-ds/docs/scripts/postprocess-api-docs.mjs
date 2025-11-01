@@ -35,7 +35,8 @@ function buildDocId(relativePath) {
   if (filtered.length === 0) {
     return 'api';
   }
-  return ['api', ...filtered].join('/');
+  // Use dashes instead of slashes to avoid Docusaurus error
+  return ['api', ...filtered].join('-');
 }
 
 function labelFromSegments(relativePath) {
