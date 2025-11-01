@@ -68,7 +68,7 @@ npm version major  # Breaking changes: 0.1.0 → 1.0.0
 
 ```bash
 # Create the tag
-git tag v0.1.0
+# git tag v0.1.0
 
 # Push code and tag
 git push origin main --tags

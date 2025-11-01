@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Test @tangent.to/ds - Observable Style</title>
+</head>
+<body>
+  <h1>Testing @tangent.to/ds in Browser (Observable-style)</h1>
+  <div id="output"></div>
+
+  <script type="module">
+    const output = document.getElementById('output');
+
+    function log(msg, isError = false) {
+      const p = document.createElement('p');
+      p.textContent = msg;
+      p.style.color = isError ? 'red' : 'green';
+      output.appendChild(p);
+    }
+
+    try {
+      // Test 1: Import from dist (simulating npm package)
+      log('Attempting to import from ./dist/index.js...');
+      const pkg = await import('./dist/index.js');
+      log('✓ Import successful!');
+      log(`Exports: ${Object.keys(pkg).join(', ')}`);
+
+      // Test 2: Check module structure
+      if (pkg.core) log('✓ core module exists');
+      if (pkg.stats) log('✓ stats module exists');
+      if (pkg.ml) log('✓ ml module exists');
+      if (pkg.mva) log('✓ mva module exists');
+      if (pkg.plot) log('✓ plot module exists');
+
+      // Test 3: Try using some functionality
+      log('\nTesting basic functionality...');
+      const transposed = pkg.core.linalg.transpose([[1, 2], [3, 4]]);
+      log(`✓ Linear algebra works: ${JSON.stringify(transposed)}`);
+
+      // Test 4: Check if Observable Plot is needed
+      log('\nChecking plot module...');
+      const rocConfig = pkg.plot.plotROC([0, 1, 0], [0.1, 0.9, 0.3]);
+      log(`✓ Plot config generated: ${rocConfig.type}`);
+
+    } catch (error) {
+      log(`✗ ERROR: ${error.message}`, true);
+      log(`Stack: ${error.stack}`, true);
+    }
+  </script>
+</body>
+</html>

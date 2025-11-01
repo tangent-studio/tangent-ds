@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test @tangent.to/ds via esm.sh</title>
+</head>
+<body>
+  <h1>Testing via esm.sh (Observable's method)</h1>
+  <pre id="output"></pre>
+
+  <script type="module">
+    const output = document.getElementById('output');
+
+    try {
+      output.textContent = 'Loading from esm.sh...\n';
+      const pkg = await import('https://esm.sh/@tangent.to/ds@0.1.4');
+      output.textContent += 'SUCCESS!\n';
+      output.textContent += 'Exports: ' + Object.keys(pkg).join(', ') + '\n';
+
+      if (pkg.core) {
+        output.textContent += '\nTesting core.linalg.transpose:\n';
+        const result = pkg.core.linalg.transpose([[1, 2], [3, 4]]);
+        output.textContent += JSON.stringify(result) + '\n';
+      }
+    } catch (error) {
+      output.textContent += '\nERROR: ' + error.message + '\n';
+      output.textContent += error.stack;
+    }
+  </script>
+</body>
+</html>
