@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Helper script to compute reference results using @tangent.to/ds for comparison
- * with scikit-learn. Supports PCA, linear regression, KMeans, LDA,
+ * with scikit-learn. Supports PCA, CCA, linear regression, KMeans, LDA,
  * logistic regression, polynomial regression, MLP regression,
  * KNN, decision trees, random forests, and GAMs.
  *
@@ -66,6 +66,36 @@ async function run() {
       varianceExplained: model.varianceExplained,
       cumulativeVariance: cumulative,
       scores: model.scores.slice(0, 5) // include a handful for spot checking
+    };
+    console.log(JSON.stringify(response));
+    return;
+  }
+
+  if (mode === 'cca') {
+    const { CCA } = await import(resolvePackagePath('src/mva/index.js'));
+    const { X, Y, options = {} } = payload;
+    const estimator = new CCA(options);
+    estimator.fit(X, Y);
+    const model = estimator.model;
+    const nComponents = model.correlations.length;
+
+    const toMatrix = (rows, prefix) =>
+      rows.map((row) => {
+        const values = [];
+        for (let i = 1; i <= nComponents; i += 1) {
+          values.push(row[`${prefix}${i}`]);
+        }
+        return values;
+      });
+
+    const response = {
+      correlations: model.correlations,
+      xWeights: toMatrix(model.xWeights, 'cca'),
+      yWeights: toMatrix(model.yWeights, 'cca'),
+      xScores: toMatrix(model.xScores, 'cca'),
+      yScores: toMatrix(model.yScores, 'cca'),
+      columnsX: model.columnsX,
+      columnsY: model.columnsY
     };
     console.log(JSON.stringify(response));
     return;

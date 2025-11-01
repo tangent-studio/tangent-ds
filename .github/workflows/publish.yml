@@ -65,10 +65,15 @@ jobs:
           cd tangent-ds/docs
           npm ci
 
+      - name: Generate API docs from JSDoc
+        run: |
+          cd tangent-ds/docs
+          npm run generate:api
+
       - name: Build documentation site
         run: |
           cd tangent-ds/docs
-          npm run build
+          SKIP_GENERATE_API=1 npm run build
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4

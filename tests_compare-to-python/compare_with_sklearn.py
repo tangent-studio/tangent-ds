@@ -23,6 +23,7 @@ from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.metrics import r2_score
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.neural_network import MLPRegressor as SkMLPRegressor
+from sklearn.cross_decomposition import CCA as SkCCA
 
 ROOT = Path(__file__).resolve().parents[1]
 NODE_SCRIPT = ROOT / "tests_compare-to-python" / "compare_tangent.mjs"
@@ -145,6 +146,84 @@ def compare_kmeans(seed: int = 100):
     return {
         "centroid_max_abs_diff": float(centroid_diff),
         "inertia_diff": float(inertia_diff)
+    }
+
+
+def compare_cca(seed: int = 314):
+    rng = np.random.default_rng(seed)
+    n = 150
+    px = 3
+    py = 2
+
+    X = rng.normal(size=(n, px))
+    coeff = np.array([
+        [0.8, -0.2],
+        [0.6, 0.9],
+        [-0.4, 0.3],
+    ])
+    noise = rng.normal(scale=0.05, size=(n, py))
+    Y = X @ coeff + noise
+
+    tangent = run_node(
+        "cca",
+        {
+            "X": X.tolist(),
+            "Y": Y.tolist(),
+            "options": {"center": True, "scale": False}
+        }
+    )
+
+    n_components = py
+    skl_cca = SkCCA(n_components=n_components, scale=False, max_iter=500, tol=1e-06)
+    skl_cca.fit(X, Y)
+    skl_x_scores, skl_y_scores = skl_cca.transform(X, Y)
+
+    skl_corrs = []
+    for i in range(n_components):
+        corr = np.corrcoef(skl_x_scores[:, i], skl_y_scores[:, i])[0, 1]
+        skl_corrs.append(corr)
+    skl_corrs = np.array(skl_corrs)
+
+    tangent_corrs = np.array(tangent["correlations"])
+
+    corr_diff = np.max(np.abs(np.abs(tangent_corrs) - np.abs(skl_corrs)))
+
+    tangent_x_weights = np.array(tangent["xWeights"])
+    tangent_y_weights = np.array(tangent["yWeights"])
+    skl_x_weights = skl_cca.x_weights_
+    skl_y_weights = skl_cca.y_weights_
+
+    def min_signed_norm(a_row, b_row):
+        return min(
+            np.linalg.norm(a_row - b_row),
+            np.linalg.norm(a_row + b_row)
+        )
+
+    weight_diffs_x = [
+        min_signed_norm(tangent_x_weights[:, i], skl_x_weights[:, i])
+        for i in range(n_components)
+    ]
+    weight_diffs_y = [
+        min_signed_norm(tangent_y_weights[:, i], skl_y_weights[:, i])
+        for i in range(n_components)
+    ]
+
+    tangent_x_scores = np.array(tangent["xScores"])
+    tangent_y_scores = np.array(tangent["yScores"])
+    score_corr_diffs = []
+    for i in range(n_components):
+        tan_corr = np.corrcoef(
+            tangent_x_scores[:, i],
+            tangent_y_scores[:, i]
+        )[0, 1]
+        skl_corr = skl_corrs[i]
+        score_corr_diffs.append(abs(abs(tan_corr) - abs(skl_corr)))
+
+    return {
+        "correlation_abs_diff": float(corr_diff),
+        "x_weight_signed_norm_diff": float(max(weight_diffs_x)),
+        "y_weight_signed_norm_diff": float(max(weight_diffs_y)),
+        "score_correlation_abs_diff": float(max(score_corr_diffs))
     }
 
 
@@ -668,6 +747,7 @@ def main():
     pca_result = compare_pca()
     lm_result = compare_linear_regression()
     kmeans_result = compare_kmeans()
+    cca_result = compare_cca()
     lda_result = compare_lda()
     logit_result = compare_logistic()
     poly_result = compare_polynomial()
@@ -691,6 +771,10 @@ def main():
 
     print("\n=== KMeans comparison ===")
     for key, value in kmeans_result.items():
+        print(f"{key}: {value}")
+
+    print("\n=== CCA comparison ===")
+    for key, value in cca_result.items():
         print(f"{key}: {value}")
 
     print("\n=== LDA comparison ===")
