@@ -1,3 +1,5 @@
+import { attachShow } from './show.js';
+
 /**
  * Visualization utilities for model interpretation
  * Returns Observable Plot configuration objects
@@ -24,7 +26,7 @@ export function plotFeatureImportance(importances, {
     rank: i + 1
   }));
   
-  return {
+  return attachShow({
     type: 'featureImportance',
     width,
     height,
@@ -43,7 +45,7 @@ export function plotFeatureImportance(importances, {
         sort: { y: '-x' }
       }
     ]
-  };
+  });
 }
 
 /**
@@ -66,7 +68,7 @@ export function plotPartialDependence(pdResult, {
   
   const xLabel = featureName || `Feature ${feature}`;
   
-  return {
+  return attachShow({
     type: 'partialDependence',
     width,
     height,
@@ -93,7 +95,7 @@ export function plotPartialDependence(pdResult, {
         r: 3
       }
     ]
-  };
+  });
 }
 
 /**
@@ -122,7 +124,7 @@ export function plotCorrelationMatrix(corrResult, {
     }
   }
   
-  return {
+  return attachShow({
     type: 'correlationMatrix',
     width,
     height,
@@ -153,7 +155,7 @@ export function plotCorrelationMatrix(corrResult, {
         fontSize: 10
       }
     ]
-  };
+  });
 }
 
 /**
@@ -177,7 +179,7 @@ export function plotResiduals(residualData, {
     residual: yValues[i]
   }));
   
-  return {
+  return attachShow({
     type: 'residuals',
     width,
     height,
@@ -203,7 +205,7 @@ export function plotResiduals(residualData, {
         strokeDasharray: '4,4'
       }
     ]
-  };
+  });
 }
 
 /**
@@ -241,7 +243,7 @@ export function plotQQ(residualData, {
   const minVal = Math.min(...theoreticalQuantiles, ...sorted);
   const maxVal = Math.max(...theoreticalQuantiles, ...sorted);
   
-  return {
+  return attachShow({
     type: 'qq',
     width,
     height,
@@ -274,7 +276,7 @@ export function plotQQ(residualData, {
         r: 3
       }
     ]
-  };
+  });
 }
 
 /**
@@ -307,7 +309,7 @@ export function plotLearningCurve(lcResult, {
     { size, score: testScores[i], type: 'test' }
   ]).flat();
   
-  return {
+  return attachShow({
     type: 'learningCurve',
     width,
     height,
@@ -337,5 +339,5 @@ export function plotLearningCurve(lcResult, {
     legend: {
       color: { domain: ['train', 'test'], label: 'Type' }
     }
-  };
+  });
 }

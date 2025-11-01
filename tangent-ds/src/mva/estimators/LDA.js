@@ -53,7 +53,7 @@ export class LDA extends Classifier {
     } else {
       // Positional numeric call: fit(Xarray, yarray, opts)
       // pass opts through if provided
-      result = ldaFn.fit(X, y);
+      result = ldaFn.fit(X, y, opts);
     }
 
     // Save model and metadata

@@ -43,7 +43,12 @@ function prepareMatricesFromTable({
     throw new Error('No valid rows available after filtering missing values.');
   }
 
-  return { Y, X };
+  return {
+    Y,
+    X,
+    responseNames: responseCols.map((c) => String(c)),
+    predictorNames: predictorCols.map((c) => String(c))
+  };
 }
 
 export class RDA extends Transformer {
@@ -79,13 +84,22 @@ export class RDA extends Transformer {
       predictors = prepared.X;
       scale = callOpts.scale;
       omitMissing = callOpts.omit_missing;
+      opts = {
+        ...opts,
+        responseNames: prepared.responseNames,
+        predictorNames: prepared.predictorNames
+      };
     }
 
     if (!responses || !predictors) {
       throw new Error('RDA.fit requires response and predictor matrices.');
     }
 
-    const result = rda.fit(responses, predictors, { scale });
+    const result = rda.fit(responses, predictors, {
+      scale,
+      responseNames: opts.responseNames,
+      predictorNames: opts.predictorNames
+    });
     this.model = { ...result, omit_missing: omitMissing };
     this.params.scale = scale;
     this.params.omit_missing = omitMissing;

@@ -1,3 +1,5 @@
+import { attachShow } from './show.js';
+
 /**
  * PCA visualization helpers
  * Returns Observable Plot configuration objects
@@ -74,7 +76,7 @@ export function plotPCA(result, {
     });
   }
   
-  return config;
+  return attachShow(config);
 }
 
 /**
@@ -92,7 +94,7 @@ export function plotScree(result, { width = 640, height = 300 } = {}) {
     label: `PC${i + 1}`
   }));
   
-  return {
+  return attachShow({
     type: 'scree',
     width,
     height,
@@ -119,5 +121,5 @@ export function plotScree(result, { width = 640, height = 300 } = {}) {
         r: 5
       }
     ]
-  };
+  });
 }

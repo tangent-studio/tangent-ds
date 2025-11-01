@@ -6,6 +6,7 @@
 import { toMatrix, solveLeastSquares, Matrix } from '../core/linalg.js';
 import * as pca from './pca.js';
 import { mean } from '../core/math.js';
+import { prepareX } from '../core/table.js';
 
 /**
  * Fit RDA model
@@ -14,61 +15,112 @@ import { mean } from '../core/math.js';
  * @param {Object} options - {scale: boolean}
  * @returns {Object} RDA model
  */
-export function fit(Y, X, { scale = false } = {}) {
-  const responseData = Y.map(row => Array.isArray(row) ? row : [row]);
-  const explData = X.map(row => Array.isArray(row) ? row : [row]);
-  
+export function fit(Y, X, options = {}) {
+  let scale = options.scale ?? false;
+  let responseMatrix = Y;
+  let predictorMatrix = X;
+  let responseNames = Array.isArray(options.responseNames)
+    ? options.responseNames.map((name) => String(name))
+    : null;
+  let predictorNames = Array.isArray(options.predictorNames)
+    ? options.predictorNames.map((name) => String(name))
+    : null;
+
+  if (
+    Y &&
+    typeof Y === "object" &&
+    !Array.isArray(Y) &&
+    (Y.data || Y.response || Y.responses || Y.predictors || Y.Y)
+  ) {
+    const opts = Y;
+    const data = opts.data;
+    const responseCols = opts.response || opts.responses || opts.Y;
+    const predictorCols = opts.predictors || opts.X;
+    if (!data || !responseCols || !predictorCols) {
+      throw new Error("RDA.fit requires data, response columns, and predictor columns.");
+    }
+    const omitMissing = opts.omit_missing !== undefined ? opts.omit_missing : true;
+    scale = opts.scale !== undefined ? opts.scale : scale;
+
+    const responseList = Array.isArray(responseCols) ? responseCols : [responseCols];
+    const predictorList = Array.isArray(predictorCols) ? predictorCols : [predictorCols];
+
+    const responsePrepInitial = prepareX({
+      columns: responseList,
+      data,
+      omit_missing: omitMissing,
+    });
+    const predictorPrep = prepareX({
+      columns: predictorList,
+      data: responsePrepInitial.rows,
+      omit_missing: omitMissing,
+    });
+    const responsePrepAligned = prepareX({
+      columns: responseList,
+      data: predictorPrep.rows,
+      omit_missing: false,
+    });
+
+    responseMatrix = responsePrepAligned.X;
+    predictorMatrix = predictorPrep.X;
+    responseNames = responsePrepAligned.columns.map((name) => String(name));
+    predictorNames = predictorPrep.columns.map((name) => String(name));
+  }
+
+  if (!responseMatrix || !predictorMatrix) {
+    throw new Error('RDA.fit requires response and predictor matrices.');
+  }
+
+  const responseData = responseMatrix.map(row => Array.isArray(row) ? row : [row]);
+  const explData = predictorMatrix.map(row => Array.isArray(row) ? row : [row]);
+
   const n = responseData.length;
   const q = responseData[0].length;
   const p = explData[0].length;
-  
+
   if (n !== explData.length) {
     throw new Error('Y and X must have same number of rows');
   }
-  
+
   if (n < p + 2) {
     throw new Error('Need more samples than explanatory variables');
   }
-  
-  // Center Y and X
+
   const YMeans = [];
   const XMeans = [];
-  
+
   for (let j = 0; j < q; j++) {
     const col = responseData.map(row => row[j]);
     YMeans.push(mean(col));
   }
-  
+
   for (let j = 0; j < p; j++) {
     const col = explData.map(row => row[j]);
     XMeans.push(mean(col));
   }
-  
-  const YCentered = responseData.map(row => 
+
+  const YCentered = responseData.map(row =>
     row.map((val, j) => val - YMeans[j])
   );
-  
-  const XCentered = explData.map(row => 
+
+  const XCentered = explData.map(row =>
     row.map((val, j) => val - XMeans[j])
   );
-  
-  // Fit Y ~ X using multiple regression for each column of Y
+
   const YFitted = [];
   const YResiduals = [];
   const coefficients = [];
-  
+
   for (let j = 0; j < q; j++) {
     const yCol = YCentered.map(row => row[j]);
-    
-    // Solve: X * beta = y
+
     const XMat = new Matrix(XCentered);
     const yVec = Matrix.columnVector(yCol);
     const betaVec = solveLeastSquares(XMat, yVec);
     const beta = betaVec.to1DArray();
-    
+
     coefficients.push(beta);
-    
-    // Compute fitted and residuals
+
     const fitted = [];
     const residuals = [];
     for (let i = 0; i < n; i++) {
@@ -79,12 +131,11 @@ export function fit(Y, X, { scale = false } = {}) {
       fitted.push(yhat);
       residuals.push(yCol[i] - yhat);
     }
-    
+
     YFitted.push(fitted);
     YResiduals.push(residuals);
   }
-  
-  // Transpose fitted values to get n x q matrix
+
   const fittedMatrix = [];
   for (let i = 0; i < n; i++) {
     const row = [];
@@ -93,11 +144,13 @@ export function fit(Y, X, { scale = false } = {}) {
     }
     fittedMatrix.push(row);
   }
-  
-  // Perform PCA on fitted values
-  const pcaModel = pca.fit(fittedMatrix, { scale, center: false });
-  
-  // Rename PC scores to canonical axes
+
+  const pcaModel = pca.fit(fittedMatrix, {
+    scale,
+    center: false,
+    columns: responseNames || undefined,
+  });
+
   const canonicalScores = pcaModel.scores.map(score => {
     const newScore = {};
     Object.keys(score).forEach(key => {
@@ -108,8 +161,7 @@ export function fit(Y, X, { scale = false } = {}) {
     });
     return newScore;
   });
-  
-  // Rename loadings
+
   const canonicalLoadings = pcaModel.loadings.map(loading => {
     const newLoading = { variable: loading.variable };
     Object.keys(loading).forEach(key => {
@@ -120,8 +172,7 @@ export function fit(Y, X, { scale = false } = {}) {
     });
     return newLoading;
   });
-  
-  // Compute total and explained inertia
+
   let totalInertia = 0;
   for (let j = 0; j < q; j++) {
     for (let i = 0; i < n; i++) {
@@ -129,7 +180,7 @@ export function fit(Y, X, { scale = false } = {}) {
     }
   }
   totalInertia /= n;
-  
+
   let explainedInertia = 0;
   for (let j = 0; j < q; j++) {
     for (let i = 0; i < n; i++) {
@@ -137,10 +188,10 @@ export function fit(Y, X, { scale = false } = {}) {
     }
   }
   explainedInertia /= n;
-  
+
   const constrainedVariance = explainedInertia / totalInertia;
-  
-  return {
+
+  const model = {
     canonicalScores,
     canonicalLoadings,
     eigenvalues: pcaModel.eigenvalues,
@@ -153,6 +204,15 @@ export function fit(Y, X, { scale = false } = {}) {
     p,
     q
   };
+
+  if (responseNames) {
+    model.responseNames = responseNames;
+  }
+  if (predictorNames) {
+    model.predictorNames = predictorNames;
+  }
+
+  return model;
 }
 
 /**

@@ -1,3 +1,5 @@
+import { attachShow } from './show.js';
+
 /**
  * Classification visualization utilities
  * ROC curves, confusion matrices, precision-recall curves
@@ -66,7 +68,7 @@ export function plotROC(yTrue, yProb, {
     });
   }
 
-  return config;
+  return attachShow(config);
 }
 
 /**
@@ -171,7 +173,7 @@ export function plotPrecisionRecall(yTrue, yProb, {
     });
   }
 
-  return config;
+  return attachShow(config);
 }
 
 /**
@@ -299,7 +301,7 @@ export function plotConfusionMatrix(yTrue, yPred, {
     title: normalize ? 'Normalized Confusion Matrix' : 'Confusion Matrix'
   };
 
-  return config;
+  return attachShow(config);
 }
 
 /**
@@ -390,7 +392,7 @@ export function plotCalibration(yTrue, yProb, {
     title: 'Calibration Curve'
   };
 
-  return config;
+  return attachShow(config);
 }
 
 /**

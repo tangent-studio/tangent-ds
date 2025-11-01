@@ -1,3 +1,5 @@
+import { attachShow } from './show.js';
+
 /**
  * Unified ordination plot (ordiplot) for PCA, LDA, and RDA
  * Provides a consistent interface for plotting ordination results
@@ -86,12 +88,13 @@ export function ordiplot(result, {
   }
 
   // Add score points
+  const hasColorField = scoresData.length > 0 && scoresData.every((d) => typeof d.color !== 'undefined');
   config.marks.push({
     type: 'dot',
     data: 'scores',
     x: 'x',
     y: 'y',
-    fill: colorBy ? 'color' : 'steelblue',
+    fill: hasColorField ? 'color' : 'steelblue',
     r: 4,
     fillOpacity: 0.7,
     tip: labels ? true : false
@@ -164,7 +167,7 @@ export function ordiplot(result, {
     });
   }
 
-  return config;
+  return attachShow(config);
 }
 
 /**

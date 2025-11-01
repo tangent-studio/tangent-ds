@@ -1,3 +1,5 @@
+import { attachShow } from './show.js';
+
 /**
  * LDA visualization helpers
  */
@@ -28,7 +30,7 @@ export function plotLDA(result, {
       index: i
     }));
     
-    return {
+    return attachShow({
       type: 'lda',
       width,
       height: height / 2,
@@ -47,7 +49,7 @@ export function plotLDA(result, {
           r: 5
         }
       ]
-    };
+    });
   }
   
   // 2D plot
@@ -58,7 +60,7 @@ export function plotLDA(result, {
     index: i
   }));
   
-  return {
+  return attachShow({
     type: 'lda',
     width,
     height,
@@ -77,5 +79,5 @@ export function plotLDA(result, {
         r: 5
       }
     ]
-  };
+  });
 }

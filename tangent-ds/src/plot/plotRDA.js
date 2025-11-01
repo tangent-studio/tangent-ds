@@ -1,3 +1,5 @@
+import { attachShow } from './show.js';
+
 /**
  * RDA visualization helpers
  */
@@ -32,7 +34,7 @@ export function plotRDA(result, {
     variable: loading.variable
   }));
   
-  return {
+  return attachShow({
     type: 'rda',
     width,
     height,
@@ -64,5 +66,5 @@ export function plotRDA(result, {
         strokeWidth: 2
       }
     ]
-  };
+  });
 }

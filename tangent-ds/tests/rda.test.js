@@ -65,6 +65,26 @@ describe('RDA - Redundancy Analysis', () => {
       expect(model.coefficients[0].length).toBe(2); // 2 predictors
     });
 
+    it('should retain response names when fitted from declarative data', () => {
+      const data = [
+        { y1: 1, y2: 2, x1: 5, x2: 10 },
+        { y1: 2, y2: 4, x1: 6, x2: 12 },
+        { y1: 3, y2: 6, x1: 7, x2: 14 },
+        { y1: 4, y2: 8, x1: 8, x2: 16 }
+      ];
+
+      const model = fit({
+        data,
+        response: ['y1', 'y2'],
+        predictors: ['x1', 'x2']
+      });
+
+      expect(model.responseNames).toEqual(['y1', 'y2']);
+      expect(model.predictorNames).toEqual(['x1', 'x2']);
+      expect(model.canonicalLoadings[0].variable).toBe('y1');
+      expect(model.canonicalLoadings[1].variable).toBe('y2');
+    });
+
     it('should throw error for mismatched dimensions', () => {
       const Y = [[1], [2]];
       const X = [[1]];
@@ -148,5 +168,25 @@ describe('RDA - class API', () => {
     const transformed = estimator.transform(Y, X);
     expect(transformed.length).toBe(3);
     expect(transformed[0].rda1).toBeDefined();
+  });
+
+  it('should keep response names when using declarative fit', () => {
+    const data = [
+      { y1: 1, y2: 3, x1: 2, x2: 4 },
+      { y1: 2, y2: 6, x1: 3, x2: 6 },
+      { y1: 3, y2: 9, x1: 4, x2: 8 },
+      { y1: 4, y2: 12, x1: 5, x2: 10 }
+    ];
+
+    const estimator = new RDA();
+    estimator.fit({
+      data,
+      response: ['y1', 'y2'],
+      predictors: ['x1', 'x2']
+    });
+
+    expect(estimator.model.responseNames).toEqual(['y1', 'y2']);
+    expect(estimator.model.predictorNames).toEqual(['x1', 'x2']);
+    expect(estimator.model.canonicalLoadings[0].variable).toBe('y1');
   });
 });

@@ -8,6 +8,8 @@ import { svd, Matrix, toMatrix } from "../core/linalg.js";
 import { mean, stddev } from "../core/math.js";
 import { prepareX } from "../core/table.js";
 
+const EPSILON = 1e-10;
+
 /**
  * Standardize data (center and optionally scale)
  * @param {Array<Array<number>>} data - Data matrix
@@ -61,6 +63,7 @@ export function fit(
     columns = null,
     data: data_in = null,
     omit_missing = true,
+    scaling = 0,
   } = {},
 ) {
   // Support declarative style: fit({ data, columns, scale, center, omit_missing })
@@ -75,14 +78,23 @@ export function fit(
     omit_missing = opts.omit_missing !== undefined
       ? opts.omit_missing
       : omit_missing;
+    scaling = opts.scaling !== undefined ? opts.scaling : scaling;
+  }
+
+  if (![0, 1, 2].includes(scaling)) {
+    scaling = 0;
   }
 
   // Convert to array format
   let data;
+  let featureNames = null;
   if (data_in) {
     // Prepare numeric matrix from table-like input
     const prepared = prepareX({ columns, data: data_in, omit_missing });
     data = prepared.X;
+    if (prepared.columns && prepared.columns.length) {
+      featureNames = prepared.columns.map((name) => String(name));
+    }
   } else if (Array.isArray(X)) {
     data = X.map((row) => Array.isArray(row) ? row : [row]);
   } else {
@@ -94,6 +106,14 @@ export function fit(
         row.push(mat.get(i, j));
       }
       data.push(row);
+    }
+  }
+
+  if (!featureNames) {
+    if (Array.isArray(columns) && columns.length) {
+      featureNames = columns.map((name) => String(name));
+    } else if (typeof columns === "string") {
+      featureNames = [String(columns)];
     }
   }
 
@@ -141,35 +161,41 @@ export function fit(
     sortedEigenvectors.push(col);
   }
 
-  // Compute variance explained
   const totalVar = sortedEigenvalues.reduce((a, b) => a + b, 0);
   const varianceExplained = sortedEigenvalues.map((val) => val / totalVar);
 
-  // Compute scores (projections)
-  const scores = [];
-  for (let i = 0; i < n; i++) {
-    const score = {};
-    for (let j = 0; j < p; j++) {
-      let sum = 0;
-      for (let k = 0; k < p; k++) {
-        sum += processedData[i][k] * sortedEigenvectors[j][k];
-      }
-      score[`pc${j + 1}`] = sum;
-    }
-    scores.push(score);
-  }
+  const baseComponents = sortedEigenvectors.map((col) => col.slice());
+  const singularValues = s.slice(0, p);
+  const sqrtEigenvalues = sortedEigenvalues.map((val) =>
+    val > 0 ? Math.sqrt(val) : 0
+  );
+  const sqrtNSamples = Math.sqrt(Math.max(n - 1, 1));
 
-  // Create loadings (eigenvectors as columns)
-  const loadings = [];
-  for (let i = 0; i < p; i++) {
-    const loading = { variable: `var${i + 1}` };
-    for (let j = 0; j < p; j++) {
-      loading[`pc${j + 1}`] = sortedEigenvectors[j][i];
-    }
-    loadings.push(loading);
-  }
+  const baseScoresMatrix = mat.mmul(new Matrix(baseComponents));
+  const uMatrix = U.subMatrix(0, n - 1, 0, p - 1);
 
-  return {
+  const baseScoresData = matrixToArray(baseScoresMatrix);
+  const uScoresData = matrixToArray(uMatrix);
+
+  const scoresData = applyScalingToScores({
+    base: baseScoresData,
+    u: uScoresData,
+    singularValues,
+    scaling,
+    sqrtNSamples
+  });
+
+  const loadingsData = applyScalingToLoadings({
+    components: baseComponents,
+    sqrtEigenvalues,
+    scaling,
+    featureNames
+  });
+
+  const scores = toScoreObjects(scoresData, 'pc');
+  const loadings = toLoadingObjects(loadingsData.matrix, loadingsData.variableNames, 'pc');
+
+  const model = {
     scores,
     loadings,
     eigenvalues: sortedEigenvalues,
@@ -178,7 +204,14 @@ export function fit(
     sds,
     scale,
     center,
+    scaling,
+    nSamples: n,
+    singularValues,
+    components: baseComponents,
+    featureNames: loadingsData.variableNames
   };
+
+  return model;
 }
 
 /**
@@ -188,7 +221,16 @@ export function fit(
  * @returns {Array<Object>} Transformed scores
  */
 export function transform(model, X) {
-  const { loadings, means, sds, scale, center } = model;
+  const {
+    components,
+    singularValues,
+    scaling = 0,
+    nSamples,
+    means,
+    sds,
+    scale,
+    center
+  } = model;
 
   let data = X.map((row) => Array.isArray(row) ? [...row] : [row]);
   const p = data[0].length;
@@ -204,29 +246,31 @@ export function transform(model, X) {
     );
   }
 
-  // Extract loading matrix
-  const nPCs = loadings[0] ? Object.keys(loadings[0]).length - 1 : 0;
-  const loadingMatrix = [];
-  for (let j = 0; j < nPCs; j++) {
-    const col = loadings.map((l) => l[`pc${j + 1}`]);
-    loadingMatrix.push(col);
-  }
+  const basis = components || deriveComponentsFromLoadings(model.loadings);
+  const nPCs = basis.length;
 
-  // Compute scores
-  const scores = [];
+  const baseScores = [];
   for (const row of data) {
-    const score = {};
+    const entry = [];
     for (let j = 0; j < nPCs; j++) {
       let sum = 0;
       for (let k = 0; k < p; k++) {
-        sum += row[k] * loadingMatrix[j][k];
+        sum += row[k] * basis[j][k];
       }
-      score[`pc${j + 1}`] = sum;
+      entry.push(sum);
     }
-    scores.push(score);
+    baseScores.push(entry);
   }
 
-  return scores;
+  const scoresData = applyScalingToScores({
+    base: baseScores,
+    u: null,
+    singularValues,
+    scaling,
+    sqrtNSamples: nSamples ? Math.sqrt(Math.max(nSamples - 1, 1)) : 1
+  });
+
+  return toScoreObjects(scoresData, 'pc');
 }
 
 /**
@@ -243,4 +287,118 @@ export function cumulativeVariance(model) {
     cumulative.push(sum);
   }
   return cumulative;
+}
+
+function applyScalingToScores({
+  base,
+  u,
+  singularValues = [],
+  scaling = 0,
+  sqrtNSamples = 1
+}) {
+  if (!Array.isArray(base) || base.length === 0) {
+    return [];
+  }
+
+  const nComponents = base[0]?.length || 0;
+
+  switch (scaling) {
+    case 1: {
+      const factor = sqrtNSamples > 0 ? 1 / sqrtNSamples : 1;
+      return base.map(row => row.map(val => val * factor));
+    }
+    case 2: {
+      if (Array.isArray(u) && u.length) {
+        return u.map(row => row.slice(0, nComponents));
+      }
+      return base.map(row =>
+        row.map((val, idx) => {
+          const sv = singularValues[idx] ?? 1;
+          return sv > EPSILON ? val / sv : 0;
+        })
+      );
+    }
+    default:
+      return base;
+  }
+}
+
+function applyScalingToLoadings({
+  components,
+  sqrtEigenvalues,
+  scaling = 0,
+  featureNames
+}) {
+  const p = components.length;
+  const variableNames = Array.isArray(featureNames) && featureNames.length === p
+    ? featureNames.slice()
+    : Array.from({ length: p }, (_, i) => `var${i + 1}`);
+
+  const scaledColumns = components.map((col, j) => {
+    const factor = scaling === 2 ? (sqrtEigenvalues[j] ?? 1) : 1;
+    return col.map((val) => val * factor);
+  });
+
+  const matrix = columnsToRows(scaledColumns);
+  return { matrix, variableNames };
+}
+
+function matrixToArray(matrix) {
+  const rows = matrix.rows;
+  const cols = matrix.columns;
+  const result = [];
+  for (let i = 0; i < rows; i++) {
+    const row = [];
+    for (let j = 0; j < cols; j++) {
+      row.push(matrix.get(i, j));
+    }
+    result.push(row);
+  }
+  return result;
+}
+
+function toScoreObjects(matrix, prefix) {
+  return matrix.map((row) => {
+    const entry = {};
+    row.forEach((val, idx) => {
+      entry[`${prefix}${idx + 1}`] = val;
+    });
+    return entry;
+  });
+}
+
+function toLoadingObjects(matrix, variableNames, prefix) {
+  return matrix.map((row, i) => {
+    const entry = { variable: variableNames[i] || `var${i + 1}` };
+    row.forEach((val, idx) => {
+      entry[`${prefix}${idx + 1}`] = val;
+    });
+    return entry;
+  });
+}
+
+function columnsToRows(columns) {
+  if (!columns.length) return [];
+  const rows = columns[0].length;
+  const cols = columns.length;
+  const matrix = [];
+  for (let i = 0; i < rows; i++) {
+    const row = [];
+    for (let j = 0; j < cols; j++) {
+      row.push(columns[j][i]);
+    }
+    matrix.push(row);
+  }
+  return matrix;
+}
+
+function deriveComponentsFromLoadings(loadings = []) {
+  if (!loadings.length) return [];
+  const nComponents = Object.keys(loadings[0]).filter((key) => key.startsWith('pc')).length;
+  const components = [];
+  for (let j = 0; j < nComponents; j++) {
+    const vector = loadings.map((row) => row[`pc${j + 1}`]);
+    components.push(vector);
+  }
+  return components;
 }

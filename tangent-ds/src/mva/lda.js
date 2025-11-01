@@ -11,7 +11,9 @@ function toNumericMatrix(X) {
   return X.map((row) => Array.isArray(row) ? row.map(Number) : [Number(row)]);
 }
 
-export function fit(X, y) {
+export function fit(X, y, options = {}) {
+  let featureNames = null;
+
   if (
     X && typeof X === "object" && !Array.isArray(X) &&
     ("X" in X) && ("y" in X) && ("data" in X)
@@ -24,6 +26,13 @@ export function fit(X, y) {
     });
     X = prepared.X;
     y = prepared.y;
+    if (prepared.columnsX && prepared.columnsX.length) {
+      featureNames = prepared.columnsX.map((name) => String(name));
+    }
+  }
+
+  if (!featureNames && Array.isArray(options.featureNames)) {
+    featureNames = options.featureNames.map((name) => String(name));
   }
 
   const data = toNumericMatrix(X);
@@ -247,7 +256,12 @@ export function fit(X, y) {
 
   const loadings = [];
   for (let i = 0; i < p; i++) {
-    const loading = { variable: `var${i + 1}` };
+    const variableName = (featureNames && featureNames[i])
+      ? featureNames[i]
+      : (Array.isArray(options.featureNames) && options.featureNames[i])
+        ? String(options.featureNames[i])
+        : `var${i + 1}`;
+    const loading = { variable: variableName };
     for (let j = 0; j < nComponents; j++) {
       loading[`ld${j + 1}`] = discriminantAxes[j][i];
     }
@@ -267,6 +281,11 @@ export function fit(X, y) {
     eigenvectors: selectedEigenvectors.to2DArray(),
     classMeanScores,
     classStdScores,
+    featureNames: featureNames && featureNames.length === p
+      ? featureNames
+      : Array.isArray(options.featureNames) && options.featureNames.length === p
+        ? options.featureNames.map((name) => String(name))
+        : undefined,
   };
 }
 

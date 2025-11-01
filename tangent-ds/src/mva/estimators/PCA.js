@@ -22,7 +22,8 @@ const DEFAULT_PARAMS = {
   center: true,
   scale: false,
   columns: null,
-  omit_missing: true
+  omit_missing: true,
+  scaling: 0
 };
 
 export class PCA extends Transformer {
@@ -75,7 +76,8 @@ export class PCA extends Transformer {
       center: effectiveParams.center,
       scale: effectiveParams.scale,
       columns: effectiveParams.columns ?? null,
-      omit_missing: effectiveParams.omit_missing
+      omit_missing: effectiveParams.omit_missing,
+      scaling: effectiveParams.scaling ?? 0
     };
 
     return this;
@@ -137,6 +139,7 @@ export class PCA extends Transformer {
       cumulativeVariance: this.cumulativeVariance(),
       centered: !!this.params.center,
       scaled: !!this.params.scale,
+      scaling: this.params.scaling ?? 0,
       means,
       sds
     };

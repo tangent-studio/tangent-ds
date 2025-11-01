@@ -74,6 +74,58 @@ describe('PCA - Principal Component Analysis (class API)', () => {
         expect(model.eigenvalues[i]).toBeGreaterThanOrEqual(model.eigenvalues[i + 1]);
       }
     });
+
+    it('should retain original feature names when provided via columns', () => {
+      const data = [
+        { sepal_length: 5.1, sepal_width: 3.5 },
+        { sepal_length: 4.9, sepal_width: 3.0 },
+        { sepal_length: 4.7, sepal_width: 3.2 },
+        { sepal_length: 4.6, sepal_width: 3.1 }
+      ];
+
+      const p = new PCA();
+      p.fit({ data, columns: ['sepal_length', 'sepal_width'] });
+      const { loadings, featureNames } = p.model;
+
+      expect(loadings[0].variable).toBe('sepal_length');
+      expect(loadings[1].variable).toBe('sepal_width');
+      expect(featureNames).toEqual(['sepal_length', 'sepal_width']);
+    });
+
+    it('should support scaling options for scores and loadings', () => {
+      const X = [
+        [2, 1],
+        [3, 4],
+        [4, 2],
+        [5, 5],
+        [6, 3]
+      ];
+
+      const base = new PCA({ scaling: 0, center: true });
+      base.fit(X);
+
+      const distance = new PCA({ scaling: 1, center: true });
+      distance.fit(X);
+
+      const correlation = new PCA({ scaling: 2, center: true });
+      correlation.fit(X);
+
+      const n = X.length;
+      const sqrtNminus1 = Math.sqrt(n - 1);
+      const baseScore = base.model.scores[0].pc1;
+      const distanceScore = distance.model.scores[0].pc1;
+
+      expect(distanceScore).toBeCloseTo(baseScore / sqrtNminus1, 6);
+      expect(distance.model.loadings[0].pc1).toBeCloseTo(base.model.loadings[0].pc1, 6);
+
+      const sv = base.model.singularValues[0];
+      const corrScore = correlation.model.scores[0].pc1;
+      expect(corrScore).toBeCloseTo(baseScore / sv, 6);
+
+      const sqrtEigen = Math.sqrt(base.model.eigenvalues[0]);
+      expect(correlation.model.loadings[0].pc1)
+        .toBeCloseTo(base.model.loadings[0].pc1 * sqrtEigen, 6);
+    });
   });
 
   describe('transform', () => {

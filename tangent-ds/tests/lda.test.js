@@ -69,6 +69,27 @@ describe('LDA - Linear Discriminant Analysis (class API)', () => {
       expect(Math.abs(mean1 - mean0)).toBeGreaterThan(0);
     });
 
+    it('should retain feature names when fitted from tabular data', () => {
+      const data = [
+        { sepal_length: 5.1, sepal_width: 3.5, species: 'setosa' },
+        { sepal_length: 4.9, sepal_width: 3.0, species: 'setosa' },
+        { sepal_length: 6.2, sepal_width: 2.8, species: 'versicolor' },
+        { sepal_length: 6.4, sepal_width: 2.9, species: 'versicolor' }
+      ];
+
+      const lda = new LDA();
+      lda.fit({
+        X: ['sepal_length', 'sepal_width'],
+        y: 'species',
+        data
+      });
+
+      const { loadings, featureNames } = lda.model;
+      expect(loadings[0].variable).toBe('sepal_length');
+      expect(loadings[1].variable).toBe('sepal_width');
+      expect(featureNames).toEqual(['sepal_length', 'sepal_width']);
+    });
+
     it('should throw error for single class', () => {
       const X = [[1], [2]];
       const y = [0, 0];
