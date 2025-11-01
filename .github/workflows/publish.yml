@@ -65,10 +65,11 @@ jobs:
           cd tangent-ds/docs
           npm ci
 
-      - name: Generate API docs from JSDoc
-        run: |
-          cd tangent-ds/docs
-          npm run generate:api
+      # TODO: Fix TypeDoc/MDX compatibility issues
+      # - name: Generate API docs from JSDoc
+      #   run: |
+      #     cd tangent-ds/docs
+      #     npm run generate:api
 
       - name: Build documentation site
         run: |
