@@ -24,7 +24,7 @@
     "test:run": "vitest run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "build:browser": "esbuild src/index.js --bundle --platform=browser --format=esm --target=es2020 --outfile=dist/index.js --sourcemap --minify --external:fs --external:path",
+    "build:browser": "esbuild src/index.js --bundle --platform=browser --format=esm --target=es2020 --outfile=dist/index.js --sourcemap --minify",
     "watch": "esbuild src/index.js --bundle --platform=browser --format=esm --target=es2020 --outfile=dist/index.js --sourcemap --watch",
     "dev": "npm run watch",
     "example": "node examples/basic_usage.js",
